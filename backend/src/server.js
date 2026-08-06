@@ -22,14 +22,17 @@ dotenv.config();
 // Connect to MongoDB
 connectDB();
 
-// ✅ AUTO-SEED ADMIN ON SERVER START
+// ... imports remain the same
+
+/// ✅ AUTO-SEED ADMIN ON SERVER START
 const seedAdminOnStart = async () => {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@college.edu';
-    const adminExists = await Admin.findOne({ email: adminEmail });
+    let admin = await Admin.findOne({ email: adminEmail });
     
-    if (!adminExists) {
-      const admin = await Admin.create({
+    if (!admin) {
+      // Create new admin
+      admin = await Admin.create({
         name: process.env.ADMIN_NAME || 'College Admin',
         email: adminEmail,
         password: process.env.ADMIN_PASSWORD || 'Admin@123',
@@ -41,6 +44,16 @@ const seedAdminOnStart = async () => {
       console.log(`📧 Email: ${admin.email}`);
       console.log(`🔑 Password: ${process.env.ADMIN_PASSWORD || 'Admin@123'}`);
     } else {
+      // ✅ Check if password is hashed
+      const adminWithPassword = await Admin.findOne({ email: adminEmail }).select('+password');
+      if (adminWithPassword.password && !adminWithPassword.password.startsWith('$2a$')) {
+        console.log('⚠️ Password is NOT hashed! Fixing...');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('Admin@123', salt);
+        adminWithPassword.password = hashedPassword;
+        await adminWithPassword.save();
+        console.log('✅ Password fixed!');
+      }
       console.log('✅ Admin already exists');
     }
   } catch (error) {
