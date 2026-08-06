@@ -65,18 +65,13 @@ export const registerAdmin = async (req, res) => {
 };
 
 // @desc    Login Admin
-// @desc    Login Admin
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log('🔵 ===== LOGIN ATTEMPT =====');
-    console.log('📧 Email:', email);
-    console.log('🔑 Password entered:', password);
-    console.log('🔑 Password length:', password?.length);
+    console.log('🔵 Login Attempt:', { email, password: '***' });
 
     if (!email || !password) {
-      console.log('❌ Missing email or password');
       return res.status(400).json({
         success: false,
         message: 'Please provide email and password'
@@ -86,39 +81,32 @@ export const loginAdmin = async (req, res) => {
     // ✅ Find admin with password field
     const admin = await Admin.findOne({ email }).select('+password');
 
+    console.log('👤 Admin found:', admin ? 'Yes' : 'No');
+
     if (!admin) {
-      console.log('❌ Admin not found with email:', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
-    console.log('✅ Admin found:', admin.email);
-    console.log('🔐 Stored password hash:', admin.password);
-    console.log('🔐 Password hash length:', admin.password.length);
+    console.log('🔐 Password hash in DB:', admin.password);
 
     // ✅ Compare password
     const isMatch = await admin.comparePassword(password);
-    console.log('✅ Password match result:', isMatch);
+    console.log('✅ Password match:', isMatch);
 
     if (!isMatch) {
-      console.log('❌ Password does not match!');
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
-
-    console.log('✅ Password matched successfully!');
 
     admin.lastLogin = new Date();
     await admin.save();
 
     const token = generateToken(admin._id);
-
-    console.log('✅ Login successful for:', admin.email);
-    console.log('🔑 Token generated:', token.substring(0, 30) + '...');
 
     res.status(200).json({
       success: true,
