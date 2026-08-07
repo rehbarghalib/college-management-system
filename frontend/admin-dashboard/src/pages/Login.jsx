@@ -11,25 +11,25 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-  console.log('🔵 Submitting login form:', { email });
+    console.log('🔵 Submitting login form:', { email });
 
-  const result = await login(email, password);
-  
-  console.log('🟢 Login result:', result);
+    const result = await login(email, password);
+    
+    console.log('🟢 Login result:', result);
 
-  if (!result.success) {
-    setError(result.message);
-    setLoading(false);
-  } else {
-    console.log('✅ Login successful, redirecting to dashboard');
-    navigate('/dashboard');
-  }
-};
+    if (!result.success) {
+      setError(result.message);
+      setLoading(false);
+    } else {
+      console.log('✅ Login successful, redirecting to dashboard');
+      navigate('/dashboard');
+    }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -125,7 +125,7 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Forgot Password Link - ✅ Now using Link from react-router-dom */}
+            {/* Forgot Password Link */}
             <div className="text-right">
               <Link to="/forgot-password" className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-800 font-medium">
                 Forgot password?

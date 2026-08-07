@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// ✅ HARDCODED API URL - This is the only URL that will be used
-const API_URL = 'https://college-management-system-8omk.onrender.com/api';
+// ✅ Use relative path - Vercel will proxy it
+const API_URL = '/api';
 
-console.log('🔵 API URL being used:', API_URL);  // ✅ Debug log
+console.log('🔵 API URL being used:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,

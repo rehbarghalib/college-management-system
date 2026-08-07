@@ -11,9 +11,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [logoutTimer, setLogoutTimer] = useState(null);
 
-  // ✅ HARDCODED API URL - This is the only URL that will be used
-  const API_URL = 'https://college-management-system-8omk.onrender.com/api';
-
+  // ✅ Use relative path
+const API_URL = '/api';
   console.log('🔵 AuthContext API URL:', API_URL);  // ✅ Debug log
 
   // 20 hours in milliseconds
