@@ -12,6 +12,7 @@ import applicationRoutes from './routes/applicationRoutes.js';
 import settingsRoutes from './routes/settingRoutes.js';
 import feeRoutes from './routes/feeRoutes.js';
 import Admin from './models/Admin.js';
+import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
