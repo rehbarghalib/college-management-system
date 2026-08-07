@@ -12,9 +12,8 @@ export const AuthProvider = ({ children }) => {
   const [logoutTimer, setLogoutTimer] = useState(null);
 
   // ✅ Dynamic API URL - HTTPS for production
-  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'
-    : 'https://college-management-system-8omk.onrender.com/api';
+  // ✅ Hardcode the API URL for production
+const API_URL = 'https://college-management-system-8omk.onrender.com/api';
 
   // 20 hours in milliseconds
   const SESSION_TIMEOUT = 20 * 60 * 60 * 1000;
