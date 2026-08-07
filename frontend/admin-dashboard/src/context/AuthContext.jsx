@@ -11,9 +11,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [logoutTimer, setLogoutTimer] = useState(null);
 
-  // ✅ Dynamic API URL - HTTPS for production
-  // ✅ Hardcode the API URL for production
-const API_URL = 'https://college-management-system-8omk.onrender.com/api';
+  // ✅ HARDCODED API URL - This is the only URL that will be used
+  const API_URL = 'https://college-management-system-8omk.onrender.com/api';
+
+  console.log('🔵 AuthContext API URL:', API_URL);  // ✅ Debug log
 
   // 20 hours in milliseconds
   const SESSION_TIMEOUT = 20 * 60 * 60 * 1000;
@@ -72,6 +73,7 @@ const API_URL = 'https://college-management-system-8omk.onrender.com/api';
   const login = async (email, password) => {
     try {
       console.log('🔵 Frontend login attempt:', { email });
+      console.log('🔵 API URL:', API_URL);
       
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
@@ -93,7 +95,8 @@ const API_URL = 'https://college-management-system-8omk.onrender.com/api';
       console.log('✅ Login successful, token saved');
       return { success: true };
     } catch (error) {
-      console.error('🔴 Login error:', error.response?.data || error.message);
+      console.error('🔴 Login error:', error.message);
+      console.error('🔴 Error response:', error.response?.data);
       return { 
         success: false, 
         message: error.response?.data?.message || 'Login failed' 

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// ✅ Hardcode the API URL for production
+// ✅ HARDCODED API URL - This is the only URL that will be used
 const API_URL = 'https://college-management-system-8omk.onrender.com/api';
+
+console.log('🔵 API URL being used:', API_URL);  // ✅ Debug log
 
 const api = axios.create({
   baseURL: API_URL,
@@ -26,6 +28,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log('🔴 API Error:', error.response?.status, error.message);
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('admin');
