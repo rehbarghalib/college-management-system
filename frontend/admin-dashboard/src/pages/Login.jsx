@@ -11,20 +11,25 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    const result = await login(email, password);
-    
-    if (!result.success) {
-      setError(result.message);
-      setLoading(false);
-    } else {
-      navigate('/dashboard');
-    }
-  };
+  console.log('🔵 Submitting login form:', { email });
+
+  const result = await login(email, password);
+  
+  console.log('🟢 Login result:', result);
+
+  if (!result.success) {
+    setError(result.message);
+    setLoading(false);
+  } else {
+    console.log('✅ Login successful, redirecting to dashboard');
+    navigate('/dashboard');
+  }
+};
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

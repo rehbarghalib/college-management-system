@@ -64,12 +64,15 @@ export const registerAdmin = async (req, res) => {
   }
 };
 
-// @desc    Login Admin
+// @desc    Login Admin - ✅ FIXED WITH DEBUG LOGS
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log('🔵 Login Attempt:', { email, password: '***' });
+    console.log('🔵 ===== LOGIN ATTEMPT =====');
+    console.log('📧 Email:', email);
+    console.log('🔑 Password entered:', password);
+    console.log('🔑 Password length:', password?.length);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -81,32 +84,39 @@ export const loginAdmin = async (req, res) => {
     // ✅ Find admin with password field
     const admin = await Admin.findOne({ email }).select('+password');
 
-    console.log('👤 Admin found:', admin ? 'Yes' : 'No');
-
     if (!admin) {
+      console.log('❌ Admin not found with email:', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
-    console.log('🔐 Password hash in DB:', admin.password);
+    console.log('✅ Admin found:', admin.email);
+    console.log('🔐 Stored password hash:', admin.password);
+    console.log('🔐 Password hash length:', admin.password?.length);
 
     // ✅ Compare password
     const isMatch = await admin.comparePassword(password);
-    console.log('✅ Password match:', isMatch);
+    console.log('✅ Password match result:', isMatch);
 
     if (!isMatch) {
+      console.log('❌ Password does not match!');
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
+
+    console.log('✅ Password matched successfully!');
 
     admin.lastLogin = new Date();
     await admin.save();
 
     const token = generateToken(admin._id);
+
+    console.log('✅ Login successful for:', admin.email);
+    console.log('🔑 Token generated:', token.substring(0, 30) + '...');
 
     res.status(200).json({
       success: true,
@@ -141,7 +151,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// @desc    Update profile (name & email) - ✅ FIXED (single version)
+// @desc    Update profile (name & email)
 export const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -151,7 +161,6 @@ export const updateProfile = async (req, res) => {
     console.log('📧 Current Email:', req.admin.email);
     console.log('📧 New Email:', email);
 
-    // ✅ Find the admin
     const admin = await Admin.findById(req.admin._id);
     
     if (!admin) {
@@ -161,15 +170,12 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // ✅ Handle name update
     if (name && name !== admin.name) {
       admin.name = name;
       console.log('✅ Name updated to:', name);
     }
 
-    // ✅ Handle email update
     if (email && email !== admin.email) {
-      // ✅ Check if email is already used by ANOTHER admin (not this one)
       const existingAdmin = await Admin.findOne({ 
         email: email.toLowerCase().trim(), 
         _id: { $ne: req.admin._id }
@@ -190,8 +196,6 @@ export const updateProfile = async (req, res) => {
     }
 
     await admin.save();
-
-    // ✅ Return updated admin
     const updatedAdmin = await Admin.findById(admin._id);
 
     console.log('✅ Profile updated successfully');
@@ -211,7 +215,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Change password - ✅ FIXED with hashing
+// @desc    Change password
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -240,7 +244,6 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // ✅ FIX: Hash the new password before saving
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     admin.password = hashedPassword;
@@ -298,7 +301,7 @@ export const checkAdminExists = async (req, res) => {
   }
 };
 
-// @desc    Upload profile image (Local Storage)
+// @desc    Upload profile image
 export const uploadProfileImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -335,7 +338,7 @@ export const uploadProfileImage = async (req, res) => {
   }
 };
 
-// ✅ @desc    Request password reset OTP
+// ✅ Forgot Password
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -417,7 +420,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// ✅ @desc    Verify OTP
+// ✅ Verify OTP
 export const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -485,7 +488,7 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
-// ✅ @desc    Reset password - FIXED with hashing
+// ✅ Reset password
 export const resetPassword = async (req, res) => {
   try {
     const { resetToken, newPassword, confirmPassword } = req.body;
@@ -511,7 +514,6 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Verify reset token
     let decoded;
     try {
       decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
@@ -538,11 +540,9 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // ✅ FIX: Hash the new password before saving
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // Update password and clear OTP fields
     admin.password = hashedPassword;
     admin.resetPasswordOTP = null;
     admin.resetPasswordOTPExpires = null;

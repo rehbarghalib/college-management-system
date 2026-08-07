@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import Admin from '../models/Admin.js';
 import connectDB from '../config/db.js';
-import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -15,32 +14,14 @@ const seedAdmin = async () => {
     if (adminExists) {
       console.log('✅ Admin already exists!');
       console.log(`📧 Email: ${adminExists.email}`);
-      
-      // ✅ Check if password is hashed
-      if (adminExists.password && adminExists.password.startsWith('$2a$')) {
-        console.log('🔐 Password is hashed ✅');
-      } else {
-        console.log('⚠️ Password is NOT hashed! Fixing...');
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('Admin@123', salt);
-        adminExists.password = hashedPassword;
-        await adminExists.save();
-        console.log('✅ Password fixed! Login with: Admin@123');
-      }
       process.exit(0);
     }
 
-    // ✅ Create admin with hashed password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(
-      process.env.ADMIN_PASSWORD || 'Admin@123',
-      salt
-    );
-
+    // ✅ Create admin - password will be hashed by the model's pre-save hook
     const admin = await Admin.create({
       name: process.env.ADMIN_NAME || 'College Admin',
       email: adminEmail,
-      password: hashedPassword,  // ✅ Already hashed
+      password: process.env.ADMIN_PASSWORD || 'Admin@123',
       phone: process.env.ADMIN_PHONE || '9876543210',
       role: 'super_admin',
       isActive: true
@@ -52,7 +33,7 @@ const seedAdmin = async () => {
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('❌ Error creating admin:', error.message);
     process.exit(1);
   }
 };

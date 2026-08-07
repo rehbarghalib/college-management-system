@@ -61,17 +61,18 @@ const adminSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// ✅ Hash password before saving
+// ✅ Hash password before saving - FIXED
 adminSchema.pre('save', async function(next) {
-  // Only hash if password is modified
-  if (!this.isModified('password')) {
-    return next();
-  }
-  
   try {
+    // Only hash if password is modified
+    if (!this.isModified('password')) {
+      return next();
+    }
+    
+    console.log('🔐 Hashing password...');
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    console.log('🔐 Password hashed successfully');
+    console.log('✅ Password hashed successfully');
     next();
   } catch (error) {
     console.error('❌ Error hashing password:', error);
@@ -79,10 +80,13 @@ adminSchema.pre('save', async function(next) {
   }
 });
 
-// ✅ Compare password method
+// ✅ Compare password method - FIXED
 adminSchema.methods.comparePassword = async function(candidatePassword) {
   try {
     console.log('🔐 Comparing passwords...');
+    console.log('🔑 Candidate password:', candidatePassword);
+    console.log('🔐 Stored hash:', this.password);
+    
     const result = await bcrypt.compare(candidatePassword, this.password);
     console.log('✅ Compare result:', result);
     return result;

@@ -11,7 +11,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [logoutTimer, setLogoutTimer] = useState(null);
 
-  const API_URL = 'http://localhost:5002/api';
+  // ✅ Dynamic API URL - Local vs Production
+  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : `http://${window.location.hostname}:5000/api`;
 
   // 20 hours in milliseconds
   const SESSION_TIMEOUT = 20 * 60 * 60 * 1000; // 20 hours
@@ -23,9 +26,11 @@ export const AuthProvider = ({ children }) => {
     
     if (storedToken && storedAdmin) {
       try {
+        // Check if session expired
         if (loginTime) {
           const elapsed = Date.now() - parseInt(loginTime);
           if (elapsed > SESSION_TIMEOUT) {
+            // Session expired
             localStorage.removeItem('token');
             localStorage.removeItem('admin');
             localStorage.removeItem('loginTime');
@@ -34,12 +39,14 @@ export const AuthProvider = ({ children }) => {
           }
         }
 
+        // Decode token to check expiration
         const tokenData = JSON.parse(atob(storedToken.split('.')[1]));
         const currentTime = Math.floor(Date.now() / 1000);
         
         if (tokenData.exp && tokenData.exp > currentTime) {
           setToken(storedToken);
           setAdmin(JSON.parse(storedAdmin));
+          // Set auto-logout timer
           startLogoutTimer();
         } else {
           localStorage.removeItem('token');
@@ -56,10 +63,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const startLogoutTimer = () => {
+    // Clear any existing timer
     if (logoutTimer) {
       clearTimeout(logoutTimer);
     }
 
+    // Set new timer
     const timer = setTimeout(() => {
       logout('Session expired. Please login again.');
     }, SESSION_TIMEOUT);
@@ -67,25 +76,36 @@ export const AuthProvider = ({ children }) => {
     setLogoutTimer(timer);
   };
 
+  // ✅ LOGIN FUNCTION - FIXED
   const login = async (email, password) => {
     try {
+      console.log('🔵 Frontend login attempt:', { email });
+      
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password
       });
 
+      console.log('🟢 Full response:', response.data);
+
       const { admin, token } = response.data.data;
       
+      // ✅ Save to localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('admin', JSON.stringify(admin));
       localStorage.setItem('loginTime', Date.now().toString());
       
+      // ✅ Update state
       setAdmin(admin);
       setToken(token);
+      
+      // Start auto-logout timer
       startLogoutTimer();
       
+      console.log('✅ Login successful, token saved');
       return { success: true };
     } catch (error) {
+      console.error('🔴 Login error:', error.response?.data || error.message);
       return { 
         success: false, 
         message: error.response?.data?.message || 'Login failed' 
@@ -105,6 +125,11 @@ export const AuthProvider = ({ children }) => {
       setLogoutTimer(null);
     }
     
+    // Show message if provided
+    if (message) {
+      console.log('🔴 Logout:', message);
+    }
+    
     window.location.href = '/login';
   };
 
@@ -112,6 +137,7 @@ export const AuthProvider = ({ children }) => {
     if (!token) return false;
     
     try {
+      // Check if session expired
       const loginTime = localStorage.getItem('loginTime');
       if (loginTime) {
         const elapsed = Date.now() - parseInt(loginTime);
@@ -129,6 +155,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Reset timer on user activity
   const resetTimer = () => {
     if (isAuthenticated()) {
       localStorage.setItem('loginTime', Date.now().toString());
@@ -136,6 +163,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Track user activity
   useEffect(() => {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
     const handleActivity = () => {

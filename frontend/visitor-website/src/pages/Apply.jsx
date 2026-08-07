@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { FiSend, FiCheckCircle, FiAlertCircle, FiInfo, FiUser, FiMail, FiPhone, FiBook, FiAward, FiMessageSquare, FiPercent } from 'react-icons/fi';
+import { 
+  FiSend, 
+  FiCheckCircle, 
+  FiAlertCircle, 
+  FiInfo, 
+  FiUser, 
+  FiMail, 
+  FiPhone, 
+  FiBook, 
+  FiAward, 
+  FiMessageSquare, 
+  FiPercent 
+} from 'react-icons/fi';
 import api from '../services/api';
 
 const Apply = () => {
@@ -27,7 +39,7 @@ const Apply = () => {
 
   const fetchSettings = async () => {
     try {
-      console.log('🔵 Fetching settings...');
+      console.log('🔵 Fetching settings from:', api.defaults.baseURL);
       const response = await api.get('/settings');
       console.log('🟢 Settings response:', response.data);
       
@@ -39,7 +51,7 @@ const Apply = () => {
       }
       setLoadingSettings(false);
     } catch (error) {
-      console.error('🔴 Error fetching settings:', error);
+      console.error('🔴 Error fetching settings:', error.message);
       setLoadingSettings(false);
     }
   };
@@ -56,7 +68,10 @@ const Apply = () => {
     setSuccess(false);
 
     try {
-      await api.post('/applications', formData);
+      console.log('📤 Submitting application:', formData);
+      const response = await api.post('/applications', formData);
+      console.log('🟢 Application response:', response.data);
+      
       setSuccess(true);
       setFormData({
         fullName: '',
@@ -69,6 +84,7 @@ const Apply = () => {
         message: ''
       });
     } catch (err) {
+      console.error('🔴 Application error:', err.message);
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -112,7 +128,6 @@ const Apply = () => {
     );
   }
 
-  // If applications are disabled
   if (!applyEnabled) {
     return (
       <div className="container mx-auto px-4 sm:px-6 py-12">
@@ -132,13 +147,11 @@ const Apply = () => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
-      {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">📝 Apply Online</h1>
         <p className="text-gray-500">Fill out the form below to submit your application</p>
       </div>
 
-      {/* Visitor Message */}
       {visitorMessage && (
         <div className={`mb-6 p-4 rounded-xl border-2 ${getMessageStyles()} flex items-start space-x-3 max-w-2xl mx-auto shadow-sm`}>
           {getMessageIcon()}
@@ -167,7 +180,6 @@ const Apply = () => {
           )}
 
           <div className="space-y-5">
-            {/* Full Name */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-1.5">
                 <FiUser className="inline mr-2 text-blue-600" />
@@ -184,7 +196,6 @@ const Apply = () => {
               />
             </div>
 
-            {/* Email - ✅ Optional */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-1.5">
                 <FiMail className="inline mr-2 text-blue-600" />
@@ -200,7 +211,6 @@ const Apply = () => {
               />
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-1.5">
                 <FiPhone className="inline mr-2 text-blue-600" />
@@ -217,7 +227,6 @@ const Apply = () => {
               />
             </div>
 
-            {/* Course */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-1.5">
                 <FiBook className="inline mr-2 text-blue-600" />
@@ -237,7 +246,6 @@ const Apply = () => {
               </select>
             </div>
 
-            {/* Qualification */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-1.5">
                 <FiAward className="inline mr-2 text-blue-600" />
@@ -256,7 +264,6 @@ const Apply = () => {
               </select>
             </div>
 
-            {/* Obtained Marks & Total Marks */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 text-sm font-semibold mb-1.5">
@@ -292,7 +299,6 @@ const Apply = () => {
               </div>
             </div>
 
-            {/* Percentage Display */}
             {formData.obtainedMarks && formData.totalMarks && (
               <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-3 text-center">
                 <p className="text-sm text-gray-600">
@@ -303,7 +309,6 @@ const Apply = () => {
               </div>
             )}
 
-            {/* Message */}
             <div>
               <label className="block text-gray-700 text-sm font-semibold mb-1.5">
                 <FiMessageSquare className="inline mr-2 text-blue-600" />

@@ -54,9 +54,10 @@ const Fees = () => {
     fetchAllData();
   }, []);
 
+  // ✅ FIX: Apply filters whenever they change
   useEffect(() => {
     filterStudents();
-  }, [studentFeeSummary, searchTerm]);
+  }, [studentFeeSummary, searchTerm, selectedClass, selectedCategory, selectedSection]);
 
   const fetchAllData = async () => {
     try {
@@ -119,9 +120,11 @@ const Fees = () => {
     }
   };
 
+  // ✅ FIXED: Filter students based on all criteria
   const filterStudents = () => {
     let filtered = [...studentFeeSummary];
     
+    // Search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(s =>
@@ -130,16 +133,23 @@ const Fees = () => {
       );
     }
     
-    // Apply class/category/section filters
+    // Class filter
     if (selectedClass !== 'all') {
       filtered = filtered.filter(s => s.class === selectedClass);
     }
+    
+    // Category filter
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(s => s.category === selectedCategory);
     }
+    
+    // Section filter
     if (selectedSection !== 'all') {
       filtered = filtered.filter(s => s.section === selectedSection);
     }
+    
+    // ✅ Sort by student name
+    filtered.sort((a, b) => a.studentName.localeCompare(b.studentName));
     
     setFilteredStudents(filtered);
   };
@@ -303,12 +313,12 @@ const Fees = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-lg border-2 border-yellow-200 p-4 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="relative">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by student name or roll number..."
+              placeholder="Search by student or roll..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm"
@@ -334,9 +344,34 @@ const Fees = () => {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+          <select
+            value={selectedSection}
+            onChange={(e) => setSelectedSection(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm"
+          >
+            <option value="all">All Sections</option>
+            {sectionOptions.map(s => (
+              <option key={s} value={s}>Section {s}</option>
+            ))}
+          </select>
         </div>
-        <div className="mt-2 text-sm text-gray-500">
-          Total Students: <span className="font-bold text-yellow-600">{filteredStudents.length}</span>
+        <div className="mt-3 flex justify-between items-center">
+          <span className="text-sm text-gray-500">
+            Total Students: <span className="font-bold text-yellow-600">{filteredStudents.length}</span>
+          </span>
+          {(selectedClass !== 'all' || selectedCategory !== 'all' || selectedSection !== 'all' || searchTerm) && (
+            <button
+              onClick={() => {
+                setSelectedClass('all');
+                setSelectedCategory('all');
+                setSelectedSection('all');
+                setSearchTerm('');
+              }}
+              className="text-sm text-red-500 hover:text-red-700 font-medium"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -344,7 +379,7 @@ const Fees = () => {
       {filteredStudents.length === 0 ? (
         <div className="bg-white rounded-xl shadow-lg p-12 border-2 border-yellow-200 text-center">
           <p className="text-gray-500 text-lg font-medium">No fee records found</p>
-          <p className="text-gray-400 text-sm mt-2">Click "Record Payment" to add a new fee payment</p>
+          <p className="text-gray-400 text-sm mt-2">Try changing filters or record a new payment</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-lg border-2 border-yellow-200 overflow-hidden">
@@ -405,7 +440,6 @@ const Fees = () => {
                       </button>
                       <button
                         onClick={() => {
-                          // Find the first fee record to edit
                           const firstFee = fees.find(f => f.studentId === student.studentId);
                           if (firstFee) handleEdit(firstFee);
                         }}
@@ -416,9 +450,8 @@ const Fees = () => {
                       </button>
                       <button
                         onClick={() => {
-                          // Delete all fees for this student
                           const studentFees = fees.filter(f => f.studentId === student.studentId);
-                          if (window.confirm(`Are you sure you want to delete all ${studentFees.length} fee records for ${student.studentName}?`)) {
+                          if (window.confirm(`Delete all ${studentFees.length} fee records for ${student.studentName}?`)) {
                             studentFees.forEach(f => handleDelete(f._id));
                           }
                         }}
@@ -436,7 +469,7 @@ const Fees = () => {
         </div>
       )}
 
-      {/* Record Payment Modal */}
+      {/* Record Payment Modal - Same as before */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-yellow-300">
