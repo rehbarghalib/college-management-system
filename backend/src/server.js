@@ -73,6 +73,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:5174',
+    'https://quantumcollege.netlify.app',
     'https://*.onrender.com',
     'https://*.vercel.app'
   ],
