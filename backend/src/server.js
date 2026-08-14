@@ -25,37 +25,28 @@ connectDB();
 
 // ... imports remain the same
 
-/// ✅ AUTO-SEED ADMIN ON SERVER START
 const seedAdminOnStart = async () => {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@college.edu';
-    let admin = await Admin.findOne({ email: adminEmail });
-    
+    let admin = await Admin.findOne({ email: adminEmail }).select('+password');
+
     if (!admin) {
       // Create new admin
       admin = await Admin.create({
         name: process.env.ADMIN_NAME || 'College Admin',
         email: adminEmail,
-        password: process.env.ADMIN_PASSWORD || 'Admin@123',
+        password: 'Admin@123',          // plain text — pre-save hook will hash it
         phone: process.env.ADMIN_PHONE || '9876543210',
         role: 'super_admin',
         isActive: true
       });
-      console.log('✅ Admin created automatically!');
-      console.log(`📧 Email: ${admin.email}`);
-      console.log(`🔑 Password: ${process.env.ADMIN_PASSWORD || 'Admin@123'}`);
+      console.log('✅ Admin created!');
     } else {
-      // ✅ Check if password is hashed
-      const adminWithPassword = await Admin.findOne({ email: adminEmail }).select('+password');
-      if (adminWithPassword.password && !adminWithPassword.password.startsWith('$2a$')) {
-        console.log('⚠️ Password is NOT hashed! Fixing...');
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('Admin@123', salt);
-        adminWithPassword.password = hashedPassword;
-        await adminWithPassword.save();
-        console.log('✅ Password fixed!');
-      }
-      console.log('✅ Admin already exists');
+      // Force update the password every time (temporary)
+      console.log('⚠️ Force updating admin password...');
+      admin.password = 'Admin@123';     // plain text
+      await admin.save();               // this will trigger the pre-save hash
+      console.log('✅ Admin password reset to: Admin@123');
     }
   } catch (error) {
     console.error('❌ Error seeding admin:', error.message);
