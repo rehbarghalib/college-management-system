@@ -1,16 +1,15 @@
 import axios from 'axios';
 
-// ✅ Hardcode the full API URL
-const API_URL = 'https://college-management-system-8omk.onrender.com/api';
-
+const API_URL = import.meta.env.VITE_API_URL || 'https://college-management-system-8omk.onrender.com/api';
 
 console.log('🔵 API URL being used:', API_URL);
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // good practice
 });
 
 // Add token to requests
