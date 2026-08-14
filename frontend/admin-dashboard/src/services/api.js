@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// ✅ Use relative path - Vercel will proxy it
-const API_URL = '/api';
+// ✅ Hardcode the full API URL
+const API_URL = 'https://college-management-system-8omk.onrender.com/api';
+
 
 console.log('🔵 API URL being used:', API_URL);
 
